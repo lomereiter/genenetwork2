@@ -1,7 +1,11 @@
-tr .outlier {
-    background-color: #ffff99;
+tr.outlier {
+    background-color: #ffff99 !important;
 }
 
 #bar_chart_container {
     overflow-x:scroll;
+}
+
+.dataTables_scrollBody {
+    overflow-x: hidden !important;
 }
