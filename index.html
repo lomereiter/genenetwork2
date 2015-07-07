@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html style=""><head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Phenotype search demo</title>
+
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/bootstrap/3.3.5/css/bootstrap-theme.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css">
+  
+  <script src="https://cdn.jsdelivr.net/jquery/2.1.4/jquery.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.8.3/bootstrap-slider.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/algoliasearch.helper/2/algoliasearch.helper.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/hogan.js/3.0.2/hogan.common.js"></script>
+  <script src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/plug-ins/1.10.7/sorting/natural.js"></script>
+
+  <script src="coffee/phenotype_search.js"></script>
+    
+  <style type="text/css">
+  #q {
+    width: 80%;
+  }
+
+  .abbr {
+    background-color: #ddf;
+    font-size: large;
+  }
+  .hit {
+    border-style: solid;
+    border-width: 2px;
+    border-color: blue;
+  }
+
+  .even { background-color: #eee !important; }
+
+  em { font-style: normal; font-weight: bold }
+  </style>
+
+  <script type="text/template" id="hit-template">
+    <tr>
+        <!-- TODO: don't show links if values are missing -->
+        <td><a href="http://gn2.genenetwork.org/show_trait?trait_id={{{ objectID }}}&dataset={{{ dataset }}}">
+            {{{ objectID }}}</a></td>
+        <td>{{{ description }}}</td>
+        <td>{{{ _highlightResult.Authors.value }}}</td>
+        <td><a href="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=PubMed&list_uids={{{ PubMed_ID }}}&dopt=Abstract">{{{ Year }}}</a></td>
+        <td>{{{ LRS }}}</td>
+        <td>{{{ LRS_location }}}</td>
+        <td>{{{ additive }}}</td>
+    </tr>
+  </script>
+
+</head>
+<body>
+   
+<div class="container">
+  <div class="row">
+    <div>
+      <input name="q" id="q" autocomplete="off" spellcheck="false" autocorrect="false" 
+             class="form-control input-lg string" placeholder="Search traits..." type="text">
+      <div id="hits"></div>
+    </div>
+  </div>
+</div>
+  
+</body>
+</html>
