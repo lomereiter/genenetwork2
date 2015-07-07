@@ -47,7 +47,14 @@
             {{{ objectID }}}</a></td>
         <td>{{{ description }}}</td>
         <td>{{{ _highlightResult.Authors.value }}}</td>
-        <td><a href="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=PubMed&list_uids={{{ PubMed_ID }}}&dopt=Abstract">{{{ Year }}}</a></td>
+        <td>
+{{#PubMed_ID}}
+  <a href="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=PubMed&list_uids={{{ PubMed_ID }}}&dopt=Abstract">{{{ Year }}}</a>
+{{/PubMed_ID}}
+{{^PubMed_ID}}
+  {{{ Year }}}
+{{/PubMed_ID}}
+        </td>
         <td>{{{ LRS }}}</td>
         <td>{{{ LRS_location }}}</td>
         <td>{{{ additive }}}</td>
