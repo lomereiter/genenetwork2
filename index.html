@@ -21,7 +21,7 @@
   <script src="coffee/phenotype_search.js"></script>
     
   <style type="text/css">
-  #q {
+  #q, #filter {
     width: 80%;
   }
 
@@ -61,7 +61,10 @@
   <div class="row">
     <div>
       <input name="q" id="q" autocomplete="off" spellcheck="false" autocorrect="false" 
-             class="form-control input-lg string" placeholder="Search traits..." type="text">
+             class="form-control input-lg string" placeholder="Search traits by description, publication title/authors, ..." type="text">
+<br/>
+      <input name="filter" id="filter" autocomplete="off" spellcheck="false" autocorrect="false"
+             class="form-control input-lg string" placeholder="Set numeric filters (e.g. LRS > 10, additive: 10 to 100)" type="text">
       <div id="hits"></div>
     </div>
   </div>

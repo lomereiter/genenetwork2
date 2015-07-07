@@ -11,30 +11,49 @@
   HITS_PER_PAGE = 50;
 
   $(function() {
-    var algolia, algoliaHelper, hitTemplate, numericFields, params, renderHits;
-    algolia = algoliasearch(APP_ID, SEARCH_ONLY_API_KEY);
+    var client, hitTemplate, numericFields, onError, onSuccess, params, performSearch, pheno_index, renderHits;
+    client = algoliasearch(APP_ID, SEARCH_ONLY_API_KEY);
+    pheno_index = client.initIndex(INDEX_NAME);
     numericFields = ['LRS', 'Mb', 'Year', 'additive'];
     params = {
       hitsPerPage: HITS_PER_PAGE,
       advancedSyntax: true
     };
-    algoliaHelper = algoliasearchHelper(algolia, INDEX_NAME, params);
+    performSearch = (function(_this) {
+      return function() {
+        var query, query_params;
+        query = $("#q").val();
+        query_params = $.extend({}, params);
+        query_params.numericFilters = $("#filter").val();
+        return pheno_index.search(query, query_params).then(onSuccess)["catch"](onError);
+      };
+    })(this);
     $("#q").on('keyup', (function(_this) {
       return function() {
-        var query;
-        query = $("#q").val();
-        return algoliaHelper.setQuery(query).search();
+        return performSearch();
       };
     })(this));
-    algoliaHelper.on('result', (function(_this) {
-      return function(content, state) {
-        return renderHits(content);
+    $("#filter").on('keyup', (function(_this) {
+      return function() {
+        return performSearch();
       };
     })(this));
+    onSuccess = (function(_this) {
+      return function(content) {
+        renderHits(content);
+        return $("#filter").css('background-color', '#fff');
+      };
+    })(this);
+    onError = (function(_this) {
+      return function(err) {
+        console.log(err);
+        return $("#filter").css('background-color', '#fdd');
+      };
+    })(this);
     $("#q").focus();
     hitTemplate = Hogan.compile($('#hit-template').text());
     return renderHits = function(content) {
-      var header, header_fields, hit, hitsHtml, i, j, len, ref, x;
+      var e, header, header_fields, hit, hitsHtml, i, j, len, ref, x;
       hitsHtml = '<table id="trait_table">';
       header_fields = ['Record ID', 'Description', 'Authors', 'Year', 'LRS', 'LRS location', 'Additive effect'];
       header = ((function() {
@@ -56,7 +75,12 @@
           hit.Mb /= 1e6;
         }
         hit.LRS_location = "Chr " + hit.Chr + ": " + (hit.Mb.toFixed(6)) + " Mb";
-        hit.additive = hit.additive.toFixed(3);
+        try {
+          hit.additive = parseFloat(hit.additive).toFixed(3);
+        } catch (_error) {
+          e = _error;
+          hit.additive = null;
+        }
         hitsHtml += hitTemplate.render(hit);
       }
       hitsHtml += '</tbody></table>';

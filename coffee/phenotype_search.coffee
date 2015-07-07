@@ -4,7 +4,8 @@ INDEX_NAME = "phenotype"
 HITS_PER_PAGE = 50
 
 $ ->
-    algolia = algoliasearch APP_ID, SEARCH_ONLY_API_KEY
+    client = algoliasearch APP_ID, SEARCH_ONLY_API_KEY
+    pheno_index = client.initIndex(INDEX_NAME)
 
     numericFields = ['LRS', 'Mb', 'Year', 'additive']
     params =
@@ -12,14 +13,25 @@ $ ->
         advancedSyntax: true
 #        disjunctiveFacets: numericFields
 
-    algoliaHelper = algoliasearchHelper(algolia, INDEX_NAME, params)
+    performSearch = () =>
+        query = $("#q").val()
+        query_params = $.extend({}, params) # clone
+        query_params.numericFilters = $("#filter").val()
+        pheno_index.search(query, query_params).then(onSuccess).catch(onError)
 
     $("#q").on 'keyup', () =>
-        query = $("#q").val()
-        algoliaHelper.setQuery(query).search()
+        performSearch()
+
+    $("#filter").on 'keyup', () =>
+        performSearch()
         
-    algoliaHelper.on 'result', (content, state) =>
+    onSuccess = (content) =>
         renderHits content
+        $("#filter").css('background-color', '#fff')
+
+    onError = (err) =>
+        console.log err
+        $("#filter").css('background-color', '#fdd')
 
     $("#q").focus()
     hitTemplate = Hogan.compile $('#hit-template').text()
@@ -36,7 +48,10 @@ $ ->
             if hit.Mb > 1e6
                 hit.Mb /= 1e6
             hit.LRS_location = "Chr #{hit.Chr}: #{hit.Mb.toFixed(6)} Mb"
-            hit.additive = hit.additive.toFixed(3)
+            try
+                hit.additive = parseFloat(hit.additive).toFixed(3)
+            catch e
+                hit.additive = null
             hitsHtml += hitTemplate.render hit
         hitsHtml += '</tbody></table>'
         if content.hits.length == 0
