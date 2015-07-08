@@ -46,8 +46,8 @@
         <td><a href="http://gn2.genenetwork.org/show_trait?trait_id={{{ objectID }}}&dataset={{{ dataset }}}">
             {{{ objectID }}}</a></td>
         <td>{{{ description }}}</td>
-        <td>{{{ _highlightResult.Authors.value }}}</td>
-        <td>
+        <td title="Title: '{{{ Title }}}'">{{{ _highlightResult.Authors.value }}}</td>
+        <td title="Title: '{{{ Title }}}'">
 {{#PubMed_ID}}
   <a href="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=PubMed&list_uids={{{ PubMed_ID }}}&dopt=Abstract">{{{ Year }}}</a>
 {{/PubMed_ID}}

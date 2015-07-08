@@ -96,10 +96,8 @@
           }, {
             sWidth: "35%"
           }, {
-            sWidth: "15%"
-          }, {
-            type: "num"
-          }, {
+            sWidth: "20%"
+          }, null, {
             type: "num"
           }, {
             type: "natural"

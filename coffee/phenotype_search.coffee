@@ -62,8 +62,8 @@ $ ->
               #{ bSortable: false },
               { type: "num", swidth: "5%" },
               { sWidth: "35%"  },
-              { sWidth: "15%"  },
-              { type: "num" }, # year
+              { sWidth: "20%"  },
+                null,
               { type: "num" }, # LRS
               { type: "natural"  }, # LRS Location
               { type: "num"  } # Additive effect
