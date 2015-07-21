@@ -1,9 +1,6 @@
-APP_ID = "A6LX075BLV"
-SEARCH_ONLY_API_KEY = "164c63eedb7efb07d13443812d592944"
-INDEX_NAME = "phenotype"
 HITS_PER_PAGE = 50
 
-class Search
+class PhenotypeSearch
     constructor: ->
         @hitTemplate = Hogan.compile $('#hit-template').text()
 
@@ -23,16 +20,17 @@ class Search
                          'LRS', 'LRS location', 'Additive effect']
         header = ('<th>' + x + '</th>' for x in header_fields).join('')
         hitsHtml += '<thead><tr>' + header + '</tr></thead><tbody>'
-        for hit, i in @hits(content)
+        hits = @hits(content)
+        for hit, i in hits
             hitsHtml += @hitTemplate.render hit
         hitsHtml += '</tbody></table>'
-        if content.hits.length == 0
+        if hits.length == 0
             hitsHtml = '<p id="no-hits">We didn\'t find any phenotypes for your search.</p>'
         $("#hits").html(hitsHtml)
         $('#trait_table').dataTable({
           columns: [
               #{ bSortable: false },
-              { type: "num", swidth: "5%" },
+              { type: "num-html", swidth: "5%" },
               { sWidth: "35%"  },
               { sWidth: "20%"  },
                 null,
@@ -48,11 +46,16 @@ class Search
           bSortClasses: false
         })
 
-class AlgoliaSearch extends Search
+class AlgoliaPhenotypeSearch extends PhenotypeSearch
     constructor: ->
         super
-        @client = algoliasearch APP_ID, SEARCH_ONLY_API_KEY
-        @pheno_index = @client.initIndex(INDEX_NAME)
+
+        @app_id = "A6LX075BLV"
+        @index_name = "phenotype"
+        @search_only_api_key = "164c63eedb7efb07d13443812d592944"
+
+        @client = algoliasearch @app_id, @search_only_api_key
+        @pheno_index = @client.initIndex(@index_name)
 
         @params =
             hitsPerPage: HITS_PER_PAGE
@@ -77,11 +80,51 @@ class AlgoliaSearch extends Search
                 hit.additive = parseFloat(hit.additive).toFixed(3)
             catch e
                 hit.additive = null
+            hit.Authors = hit._highlightResult.Authors.value
+            hit.id = hit.objectID
             h.push(hit)
         h
 
+class SolrPhenotypeSearch extends PhenotypeSearch
+    constructor: ->
+        super
+
+    performSearch: () ->
+        query = $("#q").val()
+        $.getJSON 'http://localhost:8983/solr/phenotypes/select?q='+query+"&wt=json&rows=#{HITS_PER_PAGE}&hl=true&hl.fl=*&json.wrf=?",
+                  (result) =>
+                      if result.response
+                          @onSuccess(result)
+                      else
+                          @onError(result.error.msg)
+
+    hits: (content) ->
+        hlField = (doc, field) =>
+            hl = content.highlighting[doc.id]
+            if hl and hl[field]
+                hl[field]
+            else
+                doc[field]
+
+        h = []
+        for hit in content.response.docs
+            hit.description = hlField(hit, 'Post_publication_description')
+            hit.LRS = parseFloat hit.LRS.toFixed(3)
+            if hit.Mb > 1e6
+                hit.Mb /= 1e6
+            hit.LRS_location = "Chr #{hit.Chr}: #{hit.Mb.toFixed(6)} Mb"
+            try
+                hit.additive = parseFloat(hit.additive).toFixed(3)
+            catch e
+                hit.additive = null
+            hit.Authors = hlField(hit, 'Authors')
+            h.push(hit)
+        h
+
+
 $ ->
-    client = new AlgoliaSearch
+    client = new AlgoliaPhenotypeSearch
+    #client = new SolrPhenotypeSearch
 
     $("#q").on 'keyup', () =>
         client.performSearch()
